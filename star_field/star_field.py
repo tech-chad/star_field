@@ -41,7 +41,7 @@ class StarColor:
                      self.color_white[1]-(self.color_white[1] * i),
                      self.color_white[2]-(self.color_white[2] * i))
             self.shade_list.append(color)
-            i += 0.05
+            i += 0.075
 
 
 class Star:
@@ -111,6 +111,9 @@ def make_direction_list():
 
 
 def star_field_loop(win: pygame.Surface) -> None:
+    number_list = [i for i in range(220, 39, -20)]
+    num_of_stars = 5
+    speed_number = 5
     direction_list = make_direction_list()
     star_colors = StarColor()
     clock = pygame.time.Clock()
@@ -118,7 +121,7 @@ def star_field_loop(win: pygame.Surface) -> None:
     pygame.display.update()
 
     stars = []
-    for _ in range(30):
+    for _ in range(10):
         s = Star(win, DEFAULT_WIDTH, DEFAULT_HEIGHT, direction_list, star_colors)
         s.cycle(10)
         stars.append(s)
@@ -129,16 +132,60 @@ def star_field_loop(win: pygame.Surface) -> None:
             if event.type == pygame.QUIT:
                 run = False
         win.fill(COLOR_BLACK)
-        clock.tick(100)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]:
+            run = False
+        elif keys[pygame.K_0] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 0
+        elif keys[pygame.K_1] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 1
+        elif keys[pygame.K_2] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 2
+        elif keys[pygame.K_3] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 3
+        elif keys[pygame.K_4] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 4
+        elif keys[pygame.K_5] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 5
+        elif keys[pygame.K_6] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 6
+        elif keys[pygame.K_7] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 7
+        elif keys[pygame.K_8] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 8
+        elif keys[pygame.K_9] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            num_of_stars = 9
+        elif keys[pygame.K_0]:
+            speed_number = 0
+        elif keys[pygame.K_1]:
+            speed_number = 1
+        elif keys[pygame.K_2]:
+            speed_number = 2
+        elif keys[pygame.K_3]:
+            speed_number = 3
+        elif keys[pygame.K_4]:
+            speed_number = 4
+        elif keys[pygame.K_5]:
+            speed_number = 5
+        elif keys[pygame.K_6]:
+            speed_number = 6
+        elif keys[pygame.K_7]:
+            speed_number = 7
+        elif keys[pygame.K_8]:
+            speed_number = 8
+        elif keys[pygame.K_9]:
+            speed_number = 9
+
         for star in stars:
             star.draw_star()
             if star.remove_star():
                 stars.pop(stars.index(star))
-        if len(stars) <= 100:
-            for _ in range(20):
+        if len(stars) <= number_list[num_of_stars]:
+            for _ in range(2):
                 s = Star(win, DEFAULT_WIDTH, DEFAULT_HEIGHT, direction_list, star_colors)
                 stars.append(s)
         pygame.display.update()
+        clock.tick(number_list[speed_number])
 
 
 def main() -> None:
