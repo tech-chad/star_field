@@ -1,12 +1,20 @@
 # Star Field
 Star field simulation.
 
+## Requires
+- python 3.7 +
+- pygame 2.1.0
+
 ## To Run
-python or python3 star_field.py
+- Donwload wheel from: https://github.com/tech-chad/star_field/releases
+- Make and cd into new directory
+- Make a virtualvenv and activate
+- ```pip install star_field-0.1-py3-none-any.whl```
+- ```star_field```
 
 ## Commands
-- **<kbd>F</kbd>** Toggle Full Screen Mode (note: may not work on every system)
-- **<kbd>Q</kbd>****<kbd>q</kbd>** Quit
+- **<kbd>F</kbd>** Toggle Full Screen Mode (Note: may not always work)
+- **<kbd>Q</kbd><kbd>q</kbd>** Quit
 - **<kbd>0123456789</kbd>** Set speed 0 fast to 9 slow
 - **<kbd>shift 0123456789</kbd>** Set number of stars 0 max to 9 minimum
 
