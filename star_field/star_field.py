@@ -111,6 +111,9 @@ def make_direction_list():
 
 
 def star_field_loop(win: pygame.Surface) -> None:
+    full_screen = False
+    width = DEFAULT_WIDTH
+    height = DEFAULT_HEIGHT
     number_list = [i for i in range(220, 39, -20)]
     num_of_stars = 5
     speed_number = 5
@@ -122,7 +125,7 @@ def star_field_loop(win: pygame.Surface) -> None:
 
     stars = []
     for _ in range(10):
-        s = Star(win, DEFAULT_WIDTH, DEFAULT_HEIGHT, direction_list, star_colors)
+        s = Star(win, width, height, direction_list, star_colors)
         s.cycle(10)
         stars.append(s)
 
@@ -131,7 +134,14 @@ def star_field_loop(win: pygame.Surface) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        win.fill(COLOR_BLACK)
+            elif event.type == pygame.WINDOWRESIZED:
+                width, height = pygame.display.get_window_size()
+                stars.clear()
+                for _ in range(10):
+                    s = Star(win, width, height, direction_list, star_colors)
+                    s.cycle(10)
+                    stars.append(s)
+                continue
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
             run = False
@@ -175,14 +185,38 @@ def star_field_loop(win: pygame.Surface) -> None:
             speed_number = 8
         elif keys[pygame.K_9]:
             speed_number = 9
+        elif keys[pygame.K_f] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+            if full_screen:
+                full_screen = False
+                pygame.quit()
+                pygame.init()
+                win = pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT),
+                                              pygame.RESIZABLE)
+                width = DEFAULT_WIDTH
+                height = DEFAULT_HEIGHT
+            else:
+                full_screen = True
+                pygame.quit()
+                pygame.init()
+                win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                width, height = pygame.display.get_window_size()
+            pygame.display.set_caption("Star Field")
+            # pygame.display.flip()
+            stars.clear()
+            for _ in range(10):
+                s = Star(win, width, height, direction_list, star_colors)
+                s.cycle(10)
+                stars.append(s)
+            continue
 
+        win.fill(COLOR_BLACK)
         for star in stars:
             star.draw_star()
             if star.remove_star():
                 stars.pop(stars.index(star))
         if len(stars) <= number_list[num_of_stars]:
             for _ in range(2):
-                s = Star(win, DEFAULT_WIDTH, DEFAULT_HEIGHT, direction_list, star_colors)
+                s = Star(win, width, height, direction_list, star_colors)
                 stars.append(s)
         pygame.display.update()
         clock.tick(number_list[speed_number])
@@ -190,7 +224,7 @@ def star_field_loop(win: pygame.Surface) -> None:
 
 def main() -> None:
     pygame.init()
-    win = pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT))
+    win = pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT), pygame.RESIZABLE)
     pygame.display.set_caption("Star Field")
     star_field_loop(win)
 
