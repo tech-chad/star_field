@@ -201,6 +201,7 @@ def star_field_loop(win: pygame.Surface) -> None:
                     speed_number = 9
                 elif keys[pygame.K_f] and (keys[shift_l] or keys[shift_r]):
                     if full_screen:
+                        stars.clear()
                         full_screen = False
                         pygame.quit()
                         pygame.init()
@@ -208,16 +209,16 @@ def star_field_loop(win: pygame.Surface) -> None:
                                                       pygame.RESIZABLE)
                         width = DEFAULT_WIDTH
                         height = DEFAULT_HEIGHT
+                        pygame.display.set_caption("Star Field")
                     else:
+                        stars.clear()
                         full_screen = True
                         pygame.quit()
                         pygame.init()
                         win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
                         width, height = pygame.display.get_window_size()
-                    pygame.display.set_caption("Star Field")
-                    # pygame.display.flip()
-                    stars.clear()
-                    for _ in range(10):
+                        pygame.display.set_caption("Star Field")
+                    for _ in range(20):
                         s = Star(win, width, height, direction_list, star_colors)
                         s.cycle(10)
                         stars.append(s)
