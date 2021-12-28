@@ -12,6 +12,7 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_MODE = ["solid"]
 COLOR_LIST = ["white", "red", "green", "blue", "cyan", "magenta",
               "yellow", "teal", "orange", "purple"]
+MODES = ["solid_color", "cycle_color"]
 
 
 class StarColor:
@@ -135,6 +136,9 @@ def star_field_loop(win: pygame.Surface) -> None:
     color_number = 0
     shift_l = pygame.K_LSHIFT
     shift_r = pygame.K_RSHIFT
+    color_mode = 0
+    cycle_count = 2000
+    cycle_color = 0
 
     stars = []
     for _ in range(10):
@@ -223,13 +227,30 @@ def star_field_loop(win: pygame.Surface) -> None:
                         s.cycle(10)
                         stars.append(s)
                     continue
-                elif keys[pygame.K_n]:
+                elif keys[pygame.K_n] and MODES[color_mode] == "solid_color":
                     if color_number < len(COLOR_LIST) - 1:
                         color_number += 1
                     else:
                         color_number = 0
                     star_colors.set_color_name(COLOR_LIST[color_number])
-
+                elif keys[pygame.K_m]:
+                    if color_mode < len(MODES) - 1:
+                        color_mode += 1
+                    else:
+                        color_mode = 0
+                    if MODES[color_mode] == "cycle_color":
+                        star_colors.set_color_name(COLOR_LIST[cycle_color])
+                    elif MODES[color_mode] == "solid_color":
+                        star_colors.set_color_name(COLOR_LIST[color_number])
+        if MODES[color_mode] == "cycle_color" and cycle_count <= 0:
+            if cycle_color < len(COLOR_LIST) - 1:
+                cycle_color += 1
+            else:
+                cycle_color = 0
+            star_colors.set_color_name(COLOR_LIST[cycle_color])
+            cycle_count = 2000
+        elif MODES[color_mode] == "cycle_color":
+            cycle_count -= 1
         win.fill(COLOR_BLACK)
         for star in stars:
             star.draw_star()
