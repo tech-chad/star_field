@@ -137,7 +137,6 @@ def get_key_pressed() -> str:
 
 def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     pygame.key.set_repeat()
-    full_screen = False
     width = DEFAULT_WIDTH
     height = DEFAULT_HEIGHT
     number_list = [i for i in range(220, 39, -20)]
