@@ -17,7 +17,8 @@ Star field simulation.
 - **<kbd>Q</kbd><kbd>q</kbd>** Quit
 - **<kbd>m</kbd>** Switch between static color and cycle color mode
 - **<kbd>n</kbd>** Cycle through preset colors in static color mode
-- **<kbd>p</kbd>** Pause 
+- **<kbd>p</kbd>** Pause
+- **<kbd>d</kbd>** Reset to defaults
 - **<kbd>0123456789</kbd>** Set speed 0 fast to 9 slow
 - **<kbd>shift 0123456789</kbd>** Set number of stars 0 max to 9 minimum
 

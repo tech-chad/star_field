@@ -9,6 +9,8 @@ from typing import Tuple
 
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 800
+DEFAULT_SPEED = 5
+DEFAULT_STARS = 5
 COLOR_BLACK = (0, 0, 0)
 COLOR_LIST = ["white", "red", "green", "blue", "cyan", "magenta",
               "yellow", "teal", "orange", "purple"]
@@ -122,7 +124,8 @@ def get_key_pressed() -> str:
                 pygame.K_1: "1", pygame.K_2: "2", pygame.K_3: "3",
                 pygame.K_4: "4", pygame.K_5: "5", pygame.K_6: "6",
                 pygame.K_7: "7", pygame.K_8: "8", pygame.K_9: "9",
-                pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f"}
+                pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
+                pygame.K_d: "d"}
     for k in look_for.keys():
         if keys[k] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
             return f"S {look_for[k]}"
@@ -138,8 +141,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     width = DEFAULT_WIDTH
     height = DEFAULT_HEIGHT
     number_list = [i for i in range(220, 39, -20)]
-    num_of_stars = 5
-    speed_number = 5
+    num_of_stars = DEFAULT_STARS
+    speed_number = DEFAULT_SPEED
     direction_list = make_direction_list()
     star_colors = StarColor()
     clock = pygame.time.Clock()
@@ -186,6 +189,16 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                 elif key_pressed in ["0", "1", "2", "3", "4", "5", "6",
                                      "7", "8", "9"]:
                     speed_number = int(key_pressed)
+                elif key_pressed == "d":
+                    # reset to default
+                    num_of_stars = DEFAULT_STARS
+                    speed_number = DEFAULT_SPEED
+                    color_number = 0
+                    star_colors.set_color_name(COLOR_LIST[color_number])
+                    color_mode = 0
+                    cycle_count = 2000
+                    cycle_color = 0
+
                 elif key_pressed == "S f":
                     if full_screen:
                         stars.clear()
