@@ -9,7 +9,6 @@ from typing import Tuple
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 800
 COLOR_BLACK = (0, 0, 0)
-COLOR_MODE = ["solid"]
 COLOR_LIST = ["white", "red", "green", "blue", "cyan", "magenta",
               "yellow", "teal", "orange", "purple"]
 MODES = ["solid_color", "cycle_color"]
@@ -55,12 +54,11 @@ class StarColor:
 
 
 class Star:
-    def __init__(self, win: pygame.Surface,
+    def __init__(self,
                  screen_width: int,
                  screen_height: int,
                  direction_list: List[Tuple[int, int]],
                  star_color):
-        self.win = win
         self.screen_width = screen_width
         self.screen_height = screen_height
         x_half = int(self.screen_width / 2)
@@ -76,8 +74,9 @@ class Star:
         self.max_size = random.choice([1, 1, 1, 1, 2, 2])
 
     def draw_star(self) -> None:
+        win = pygame.display.get_surface()
         color = self.star_color.get_color(self.color_number)
-        pygame.draw.circle(self.win, color, (self.x, self.y), self.size)
+        pygame.draw.circle(win, color, (self.x, self.y), self.size)
         self.x += self.direction_x
         self.y += self.direction_y
         if self.size <= self.max_size:
@@ -153,7 +152,7 @@ def star_field_loop(win: pygame.Surface) -> None:
 
     stars = []
     for _ in range(10):
-        s = Star(win, width, height, direction_list, star_colors)
+        s = Star(width, height, direction_list, star_colors)
         s.cycle(10)
         stars.append(s)
 
@@ -166,7 +165,7 @@ def star_field_loop(win: pygame.Surface) -> None:
                 width, height = pygame.display.get_window_size()
                 stars.clear()
                 for _ in range(10):
-                    s = Star(win, width, height, direction_list, star_colors)
+                    s = Star(width, height, direction_list, star_colors)
                     s.cycle(10)
                     stars.append(s)
                 continue
@@ -205,7 +204,7 @@ def star_field_loop(win: pygame.Surface) -> None:
                         width, height = pygame.display.get_window_size()
                         pygame.display.set_caption("Star Field")
                     for _ in range(20):
-                        s = Star(win, width, height, direction_list, star_colors)
+                        s = Star(width, height, direction_list, star_colors)
                         s.cycle(10)
                         stars.append(s)
                     continue
@@ -234,16 +233,16 @@ def star_field_loop(win: pygame.Surface) -> None:
             cycle_count = 2000
         elif MODES[color_mode] == "cycle_color" and not pause:
             cycle_count -= 1
-        win.fill(COLOR_BLACK)
         if not pause:
+            win.fill(COLOR_BLACK)
             for star in stars:
                 star.draw_star()
                 if star.remove_star():
                     stars.pop(stars.index(star))
-            pygame.display.update()
+            pygame.display.flip()
         if len(stars) <= number_list[num_of_stars]:
             for _ in range(2):
-                s = Star(win, width, height, direction_list, star_colors)
+                s = Star(width, height, direction_list, star_colors)
                 stars.append(s)
 
         clock.tick(number_list[speed_number])
