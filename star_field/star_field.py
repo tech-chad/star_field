@@ -1,4 +1,5 @@
 # Star Field
+import argparse
 import random
 
 import pygame
@@ -131,7 +132,7 @@ def get_key_pressed() -> str:
         return ""
 
 
-def star_field_loop(win: pygame.Surface) -> None:
+def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     pygame.key.set_repeat()
     full_screen = False
     width = DEFAULT_WIDTH
@@ -170,6 +171,8 @@ def star_field_loop(win: pygame.Surface) -> None:
                     stars.append(s)
                 continue
             elif event.type == pygame.KEYDOWN:
+                if args.screensaver:
+                    run = False
                 key_pressed = get_key_pressed()
                 if key_pressed in ["q" or "S q"]:
                     run = False
@@ -248,14 +251,22 @@ def star_field_loop(win: pygame.Surface) -> None:
         clock.tick(number_list[speed_number])
 
 
+def argument_parser() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--screensaver", action="store_true",
+                        help="Screensaver mode. Any key will exit.")
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = argument_parser()
     pygame.init()
     win = pygame.display.set_mode(
         (DEFAULT_WIDTH, DEFAULT_HEIGHT),
         pygame.RESIZABLE
     )
     pygame.display.set_caption("Star Field")
-    star_field_loop(win)
+    star_field_loop(win, args)
 
 
 if __name__ == "__main__":
