@@ -13,7 +13,6 @@ Star field simulation.
 - ```star_field```
 
 ## Commands
-- **<kbd>F</kbd>** Toggle Full Screen Mode (Note: may not always work)
 - **<kbd>Q</kbd><kbd>q</kbd>** Quit
 - **<kbd>m</kbd>** Switch between static color and cycle color mode
 - **<kbd>n</kbd>** Cycle through preset colors in static color mode

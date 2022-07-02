@@ -198,32 +198,6 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                     color_mode = 0
                     cycle_count = 2000
                     cycle_color = 0
-
-                elif key_pressed == "S f":
-                    if full_screen:
-                        stars.clear()
-                        full_screen = False
-                        pygame.quit()
-                        pygame.init()
-                        win = pygame.display.set_mode((DEFAULT_WIDTH,
-                                                       DEFAULT_HEIGHT),
-                                                      pygame.RESIZABLE)
-                        width = DEFAULT_WIDTH
-                        height = DEFAULT_HEIGHT
-                        pygame.display.set_caption("Star Field")
-                    else:
-                        stars.clear()
-                        full_screen = True
-                        pygame.quit()
-                        pygame.init()
-                        win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-                        width, height = pygame.display.get_window_size()
-                        pygame.display.set_caption("Star Field")
-                    for _ in range(20):
-                        s = Star(width, height, direction_list, star_colors)
-                        s.cycle(10)
-                        stars.append(s)
-                    continue
                 elif key_pressed == "n" and MODES[color_mode] == "solid_color":
                     if color_number < len(COLOR_LIST) - 1:
                         color_number += 1
@@ -276,7 +250,7 @@ def main() -> None:
     pygame.init()
     win = pygame.display.set_mode(
         (DEFAULT_WIDTH, DEFAULT_HEIGHT),
-        pygame.RESIZABLE
+        pygame.RESIZABLE,
     )
     pygame.display.set_caption("Star Field")
     star_field_loop(win, args)
