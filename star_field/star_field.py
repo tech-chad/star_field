@@ -61,13 +61,13 @@ class Star:
                  screen_width: int,
                  screen_height: int,
                  direction_list: List[Tuple[int, int]],
-                 star_color):
+                 star_color,
+                 center_adjust_x: int,
+                 center_adjust_y: int):
         self.screen_width = screen_width
         self.screen_height = screen_height
-        x_half = int(self.screen_width / 2)
-        y_half = int(self.screen_height / 2)
-        self.x = random.randint(x_half - 2, x_half + 2)
-        self.y = random.randint(y_half - 2, y_half + 2)
+        self.x = int(self.screen_width / 2) + center_adjust_x
+        self.y = int(self.screen_height / 2) + center_adjust_y
         dx, dy = random.choice(direction_list)
         self.direction_x = dx
         self.direction_y = dy
@@ -125,7 +125,9 @@ def get_key_pressed() -> str:
                 pygame.K_4: "4", pygame.K_5: "5", pygame.K_6: "6",
                 pygame.K_7: "7", pygame.K_8: "8", pygame.K_9: "9",
                 pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
-                pygame.K_d: "d"}
+                pygame.K_d: "d", pygame.K_DOWN: "down",
+                pygame.K_UP: "up", pygame.K_LEFT: "left",
+                pygame.K_RIGHT: "right", pygame.K_r: "r"}
     for k in look_for.keys():
         if keys[k] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
             return f"S {look_for[k]}"
@@ -151,11 +153,19 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     color_mode = 0
     cycle_count = 2000
     cycle_color = 0
+    center_adjust_x = 0
+    center_adjust_y = 0
+    random_center_adjust = False
     pause = False
 
     stars = []
     for _ in range(10):
-        s = Star(width, height, direction_list, star_colors)
+        s = Star(width,
+                 height,
+                 direction_list,
+                 star_colors,
+                 center_adjust_x,
+                 center_adjust_y)
         s.cycle(10)
         stars.append(s)
 
@@ -166,9 +176,15 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                 run = False
             elif event.type == pygame.WINDOWRESIZED:
                 width, height = pygame.display.get_window_size()
+                center_adjust_y = center_adjust_x = 0
                 stars.clear()
                 for _ in range(10):
-                    s = Star(width, height, direction_list, star_colors)
+                    s = Star(width,
+                             height,
+                             direction_list,
+                             star_colors,
+                             center_adjust_x,
+                             center_adjust_y)
                     s.cycle(10)
                     stars.append(s)
                 continue
@@ -197,6 +213,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                     color_mode = 0
                     cycle_count = 2000
                     cycle_color = 0
+                    center_adjust_y = center_adjust_x = 0
+                    random_center_adjust = False
                 elif key_pressed == "n" and MODES[color_mode] == "solid_color":
                     if color_number < len(COLOR_LIST) - 1:
                         color_number += 1
@@ -212,7 +230,38 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                         star_colors.set_color_name(COLOR_LIST[cycle_color])
                     elif MODES[color_mode] == "solid_color":
                         star_colors.set_color_name(COLOR_LIST[color_number])
-
+                elif key_pressed == "r":
+                    if random_center_adjust:
+                        random_center_adjust = False
+                        center_adjust_y = center_adjust_x = 0
+                    else:
+                        random_center_adjust = True
+                elif key_pressed == "up" and not random_center_adjust:
+                    if center_adjust_y > -(height // 2 - 25):
+                        center_adjust_y -= 20
+                elif key_pressed == "down" and not random_center_adjust:
+                    if center_adjust_y < height // 2 - 25:
+                        center_adjust_y += 20
+                elif key_pressed == "left" and not random_center_adjust:
+                    if center_adjust_x > -(width // 2 - 25):
+                        center_adjust_x -= 20
+                elif key_pressed == "right" and not random_center_adjust:
+                    if center_adjust_x < width // 2 - 25:
+                        center_adjust_x += 20
+        if random_center_adjust:
+            random_change = random.choice(["N", "U", "D", "L", "R"])
+            if random_change == "U":
+                if center_adjust_y > -(height // 2 - 25):
+                    center_adjust_y -= 4
+            elif random_change == "D":
+                if center_adjust_y < height // 2 - 25:
+                    center_adjust_y += 4
+            elif random_change == "L":
+                if center_adjust_x > -(width // 2 - 25):
+                    center_adjust_x -= 4
+            elif random_change == "R":
+                if center_adjust_x < width // 2 - 25:
+                    center_adjust_x += 4
         if MODES[color_mode] == "cycle_color" and cycle_count <= 0 and not pause:
             if cycle_color < len(COLOR_LIST) - 1:
                 cycle_color += 1
@@ -231,7 +280,12 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
             pygame.display.flip()
         if len(stars) <= number_list[num_of_stars]:
             for _ in range(2):
-                s = Star(width, height, direction_list, star_colors)
+                s = Star(width,
+                         height,
+                         direction_list,
+                         star_colors,
+                         center_adjust_x,
+                         center_adjust_y)
                 stars.append(s)
 
         clock.tick(number_list[speed_number])
