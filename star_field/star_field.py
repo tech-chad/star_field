@@ -14,12 +14,22 @@ DEFAULT_STARS = 5
 COLOR_BLACK = (0, 0, 0)
 COLOR_LIST = ["white", "red", "green", "blue", "cyan", "magenta",
               "yellow", "teal", "orange", "purple"]
+BG_COLOR_NAMES = [
+    "black", "red", "green", "blue", "cyan", "yellow", "magenta",
+    "teal", "orange", "purple", "white", "gray",
+]
+BG_COLOR_DICT = {
+    "white": (200, 200, 200), "red": (128, 0, 0), "green": (0, 128, 0),
+    "blue": (0, 0, 128), "cyan": (0, 128, 128), "magenta": (128, 0, 128),
+    "yellow": (128, 128, 0), "teal": (0, 140, 100), "orange": (128, 64, 0),
+    "purple": (95, 0, 128), "black": (0, 0, 0), "gray": (90, 90, 90),
+}
 MODES = ["solid_color", "cycle_color"]
 
 
 class StarColor:
     def __init__(self):
-        self.total_num_color_shades = 12
+        self.total_num_color_shades = 9
         self.color_dict = {"white": (255, 255, 255), "red": (255, 0, 0),
                            "green": (0, 255, 0), "blue": (0, 0, 255),
                            "cyan": (0, 255, 255), "magenta": (255, 0, 255),
@@ -127,7 +137,7 @@ def get_key_pressed() -> str:
                 pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
                 pygame.K_d: "d", pygame.K_DOWN: "down",
                 pygame.K_UP: "up", pygame.K_LEFT: "left",
-                pygame.K_RIGHT: "right", pygame.K_r: "r"}
+                pygame.K_RIGHT: "right", pygame.K_r: "r", pygame.K_b: "b"}
     for k in look_for.keys():
         if keys[k] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
             return f"S {look_for[k]}"
@@ -147,8 +157,6 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     direction_list = make_direction_list()
     star_colors = StarColor()
     clock = pygame.time.Clock()
-    win.fill(color=COLOR_BLACK)
-    pygame.display.update()
     color_number = 0
     color_mode = 0
     cycle_count = 2000
@@ -157,7 +165,9 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     center_adjust_y = 0
     random_center_adjust = False
     pause = False
-
+    bg_color_number = 0
+    win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[bg_color_number]])
+    pygame.display.update()
     stars = []
     for _ in range(10):
         s = Star(width,
@@ -215,6 +225,7 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                     cycle_color = 0
                     center_adjust_y = center_adjust_x = 0
                     random_center_adjust = False
+                    bg_color_number = 0
                 elif key_pressed == "n" and MODES[color_mode] == "solid_color":
                     if color_number < len(COLOR_LIST) - 1:
                         color_number += 1
@@ -236,6 +247,11 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                         center_adjust_y = center_adjust_x = 0
                     else:
                         random_center_adjust = True
+                elif key_pressed == "b":
+                    if bg_color_number == len(BG_COLOR_NAMES) - 1:
+                        bg_color_number = 0
+                    else:
+                        bg_color_number += 1
                 elif key_pressed == "up" and not random_center_adjust:
                     if center_adjust_y > -(height // 2 - 25):
                         center_adjust_y -= 20
@@ -272,7 +288,7 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
         elif MODES[color_mode] == "cycle_color" and not pause:
             cycle_count -= 1
         if not pause:
-            win.fill(COLOR_BLACK)
+            win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[bg_color_number]])
             for star in stars:
                 star.draw_star()
                 if star.remove_star():
