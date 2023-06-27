@@ -103,9 +103,9 @@ class Star:
                 self.size += 0.05
 
     def remove_star(self) -> bool:
-        if self.x <= -30 or self.x >= self.screen_width + 30:
+        if self.x <= -2 or self.x >= self.screen_width + 2:
             return True
-        elif self.y <= -30 or self.y >= self.screen_height + 30:
+        elif self.y <= -2 or self.y >= self.screen_height + 2:
             return True
         else:
             return False
@@ -288,12 +288,15 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
         elif MODES[color_mode] == "cycle_color" and not pause:
             cycle_count -= 1
         if not pause:
+            remove_list = []
             win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[bg_color_number]])
             for star in stars:
                 star.draw_star()
                 if star.remove_star():
-                    stars.pop(stars.index(star))
+                    remove_list.append(star)
             pygame.display.flip()
+            for remove in remove_list:
+                stars.pop(stars.index(remove))
         if len(stars) <= number_list[num_of_stars]:
             for _ in range(2):
                 s = Star(width,
