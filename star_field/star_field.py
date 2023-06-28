@@ -149,8 +149,13 @@ def get_key_pressed() -> str:
 
 def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     pygame.key.set_repeat()
-    width = DEFAULT_WIDTH
-    height = DEFAULT_HEIGHT
+    width, height = pygame.display.get_window_size()
+
+    # if args.full_screen:
+    #     width, height = pygame.display.get_window_size()
+    # else:
+    #     width = DEFAULT_WIDTH
+    #     height = DEFAULT_HEIGHT
     number_list = [i for i in range(220, 39, -20)]
     num_of_stars = DEFAULT_STARS
     speed_number = DEFAULT_SPEED
@@ -214,6 +219,24 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                 elif key_pressed in ["0", "1", "2", "3", "4", "5", "6",
                                      "7", "8", "9"]:
                     speed_number = int(key_pressed)
+                elif key_pressed == "f":  # toggle back to window mode only
+                    if args.full_screen:
+                        args.full_screen = False
+                        pygame.display.toggle_fullscreen()
+                        pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT),
+                                                pygame.RESIZABLE)
+                        width, height = pygame.display.get_window_size()
+                        center_adjust_y = center_adjust_x = 0
+                        stars.clear()
+                        for _ in range(10):
+                            s = Star(width,
+                                     height,
+                                     direction_list,
+                                     star_colors,
+                                     center_adjust_x,
+                                     center_adjust_y)
+                            s.cycle(10)
+                            stars.append(s)
                 elif key_pressed == "d":
                     # reset to default
                     num_of_stars = DEFAULT_STARS
@@ -314,16 +337,22 @@ def argument_parser() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--screensaver", action="store_true",
                         help="Screensaver mode. Any key will exit.")
+    parser.add_argument("-f", "--full_screen", action="store_true",
+                        help="Full screen mode. Use 'f' to switch back to "
+                             "window mode.")
     return parser.parse_args()
 
 
 def main() -> None:
     args = argument_parser()
     pygame.init()
-    win = pygame.display.set_mode(
-        (DEFAULT_WIDTH, DEFAULT_HEIGHT),
-        pygame.RESIZABLE,
-    )
+    if args.full_screen:
+        win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN,)
+    else:
+        win = pygame.display.set_mode(
+            (DEFAULT_WIDTH, DEFAULT_HEIGHT),
+            pygame.RESIZABLE,
+        )
     pygame.display.set_caption("Star Field")
     star_field_loop(win, args)
 
