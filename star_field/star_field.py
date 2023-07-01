@@ -199,6 +199,7 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     speed_number = DEFAULT_SPEED
     direction_list = make_direction_list()
     star_colors = StarColor()
+    star_colors.set_color_name(args.color)
     clock = pygame.time.Clock()
     color_number = 0
     color_mode = 0
@@ -208,7 +209,7 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     center_adjust_y = 0
     random_center_adjust = False
     pause = False
-    bg_color_number = 0
+    bg_color_number = BG_COLOR_NAMES.index(args.background)
     win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[bg_color_number]])
     pygame.display.update()
     stars = []
@@ -410,6 +411,10 @@ def argument_parser() -> argparse.Namespace:
                              "window mode.")
     parser.add_argument("-R", "--reverse", action="store_true",
                         help="Star go in reverse.")
+    parser.add_argument("--color", choices=COLOR_LIST, default="white",
+                        help="Set the color of the stars")
+    parser.add_argument("--background", choices=BG_COLOR_NAMES, default="black",
+                        help="Set background color.")
     return parser.parse_args()
 
 
