@@ -29,7 +29,7 @@ MODES = ["solid_color", "cycle_color"]
 
 class StarColor:
     def __init__(self):
-        self.total_num_color_shades = 9
+        self.total_num_color_shades = 8
         self.color_dict = {"white": (255, 255, 255), "red": (255, 0, 0),
                            "green": (0, 255, 0), "blue": (0, 0, 255),
                            "cyan": (0, 255, 255), "magenta": (255, 0, 255),
@@ -58,7 +58,7 @@ class StarColor:
     def make_shades(self) -> None:
         self.shade_list.clear()
         i = 0
-        for _ in range(self.total_num_color_shades):
+        for _ in range(self.total_num_color_shades + 1):
             color = (self.color[0]-(self.color[0] * i),
                      self.color[1]-(self.color[1] * i),
                      self.color[2]-(self.color[2] * i))
@@ -73,18 +73,32 @@ class Star:
                  direction_list: List[Tuple[int, int]],
                  star_color,
                  center_adjust_x: int,
-                 center_adjust_y: int):
+                 center_adjust_y: int,
+                 reverse: bool):
+        self.reverse = reverse
+        self.star_color = star_color
+        self.color_number = random.randint(1, star_color.num_color_shades())
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.x = int(self.screen_width / 2) + center_adjust_x
-        self.y = int(self.screen_height / 2) + center_adjust_y
-        dx, dy = random.choice(direction_list)
-        self.direction_x = dx
-        self.direction_y = dy
-        self.star_color = star_color
-        self.color_number = random.randint(1, star_color.num_color_shades()) - 1
-        self.size = random.randint(-3, -1)
-        self.max_size = random.choice([1, 1, 1, 1, 2, 2])
+        if self.reverse:
+            self.center_x = int(self.screen_width / 2) + center_adjust_x
+            self.center_y = int(self.screen_height / 2) + center_adjust_y
+            loc_list = self.make_location_list()
+            self.x, self.y = random.choice(loc_list)
+            speed = random.randint(110, 190)
+            dx = (self.center_x - self.x) / speed
+            dy = (self.center_y - self.y) / speed
+            self.direction_x = dx
+            self.direction_y = dy
+            self.size = random.choice([1, 1, 1, 1.5, 2, 2, 2.5])
+        else:
+            self.x = int(self.screen_width / 2) + center_adjust_x
+            self.y = int(self.screen_height / 2) + center_adjust_y
+            dx, dy = random.choice(direction_list)
+            self.direction_x = dx
+            self.direction_y = dy
+            self.size = random.randint(-3, -1)
+            self.max_size = random.choice([1, 1, 1, 1, 2, 2])
 
     def draw_star(self) -> None:
         win = pygame.display.get_surface()
@@ -92,23 +106,47 @@ class Star:
         pygame.draw.circle(win, color, (self.x, self.y), self.size)
         self.x += self.direction_x
         self.y += self.direction_y
-        if self.size <= self.max_size:
-            self.size += 0.07
+        if self.reverse:
+            self.size -= 0.007
+        else:
+            if self.size <= self.max_size:
+                self.size += 0.07
 
     def cycle(self, count: int) -> None:
+        if self.reverse:
+            count += 10
         for _ in range(count):
             self.x += self.direction_x
             self.y += self.direction_y
-            if self.size <= self.max_size:
-                self.size += 0.05
+            if self.reverse:
+                self.size -= 0.07
+            else:
+                if self.size <= self.max_size:
+                    self.size += 0.07
 
     def remove_star(self) -> bool:
-        if self.x <= -2 or self.x >= self.screen_width + 2:
-            return True
-        elif self.y <= -2 or self.y >= self.screen_height + 2:
-            return True
+        if self.reverse:
+            if self.center_x - 5 <= self.x <= self.center_x + 5 and \
+                    self.center_y - 5 <= self.y <= self.center_y + 5:
+                return True
         else:
-            return False
+            if self.x <= -2 or self.x >= self.screen_width + 2:
+                return True
+            elif self.y <= -2 or self.y >= self.screen_height + 2:
+                return True
+            else:
+                return False
+
+    def make_location_list(self) -> List[Tuple[int, int]]:
+        # for reverse mode
+        loc_list = []
+        for x in range(-5, self.screen_width + 5):
+            loc_list.append((x, -5))
+            loc_list.append((x, self.screen_height + 5))
+        for y in range(-5, self.screen_height + 5):
+            loc_list.append((self.screen_width + 5, y))
+            loc_list.append((-5, y))
+        return loc_list
 
 
 def make_direction_list():
@@ -180,7 +218,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                  direction_list,
                  star_colors,
                  center_adjust_x,
-                 center_adjust_y)
+                 center_adjust_y,
+                 args.reverse,)
         s.cycle(10)
         stars.append(s)
 
@@ -199,7 +238,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                              direction_list,
                              star_colors,
                              center_adjust_x,
-                             center_adjust_y)
+                             center_adjust_y,
+                             args.reverse,)
                     s.cycle(10)
                     stars.append(s)
                 continue
@@ -234,7 +274,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                                      direction_list,
                                      star_colors,
                                      center_adjust_x,
-                                     center_adjust_y)
+                                     center_adjust_y,
+                                     args.reverse,)
                             s.cycle(10)
                             stars.append(s)
                 elif key_pressed == "d":
@@ -249,6 +290,32 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                     center_adjust_y = center_adjust_x = 0
                     random_center_adjust = False
                     bg_color_number = 0
+                    if args.reverse:
+                        args.reverse = False
+                        stars.clear()
+                        for _ in range(10):
+                            s = Star(width,
+                                     height,
+                                     direction_list,
+                                     star_colors,
+                                     center_adjust_x,
+                                     center_adjust_y,
+                                     args.reverse,)
+                            s.cycle(10)
+                            stars.append(s)
+                elif key_pressed == "S r":
+                    args.reverse = not args.reverse
+                    stars.clear()
+                    for _ in range(10):
+                        s = Star(width,
+                                 height,
+                                 direction_list,
+                                 star_colors,
+                                 center_adjust_x,
+                                 center_adjust_y,
+                                 args.reverse, )
+                        s.cycle(10)
+                        stars.append(s)
                 elif key_pressed == "n" and MODES[color_mode] == "solid_color":
                     if color_number < len(COLOR_LIST) - 1:
                         color_number += 1
@@ -327,7 +394,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                          direction_list,
                          star_colors,
                          center_adjust_x,
-                         center_adjust_y)
+                         center_adjust_y,
+                         args.reverse,)
                 stars.append(s)
 
         clock.tick(number_list[speed_number])
@@ -340,6 +408,8 @@ def argument_parser() -> argparse.Namespace:
     parser.add_argument("-f", "--full_screen", action="store_true",
                         help="Full screen mode. Use 'f' to switch back to "
                              "window mode.")
+    parser.add_argument("-R", "--reverse", action="store_true",
+                        help="Star go in reverse.")
     return parser.parse_args()
 
 
