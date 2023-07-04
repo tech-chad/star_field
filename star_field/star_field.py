@@ -55,6 +55,19 @@ class StarColor:
     def num_color_shades(self) -> int:
         return self.total_num_color_shades
 
+    def set_brightness(self, number: int) -> None:
+        if number == 1:
+            self.total_num_color_shades = 1
+        elif number == 2:
+            self.total_num_color_shades = 4
+        elif number == 3:
+            self.total_num_color_shades = 8
+        elif number == 4:
+            self.total_num_color_shades = 10
+        elif number == 5:
+            self.total_num_color_shades = 12
+        self.make_shades()
+
     def make_shades(self) -> None:
         self.shade_list.clear()
         i = 0
@@ -175,7 +188,8 @@ def get_key_pressed() -> str:
                 pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
                 pygame.K_d: "d", pygame.K_DOWN: "down",
                 pygame.K_UP: "up", pygame.K_LEFT: "left",
-                pygame.K_RIGHT: "right", pygame.K_r: "r", pygame.K_b: "b"}
+                pygame.K_RIGHT: "right", pygame.K_r: "r", pygame.K_b: "b",
+                pygame.K_a: "a"}
     for k in look_for.keys():
         if keys[k] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
             return f"S {look_for[k]}"
@@ -199,6 +213,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
     speed_number = DEFAULT_SPEED
     direction_list = make_direction_list()
     star_colors = StarColor()
+    brightness = args.brightness
+    star_colors.set_brightness(brightness)
     star_colors.set_color_name(args.color)
     clock = pygame.time.Clock()
     color_number = 0
@@ -291,6 +307,8 @@ def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
                     center_adjust_y = center_adjust_x = 0
                     random_center_adjust = False
                     bg_color_number = 0
+                    brightness = 3
+                    star_colors.set_brightness(brightness)
                     if args.reverse:
                         args.reverse = False
                         stars.clear()
@@ -415,6 +433,10 @@ def argument_parser() -> argparse.Namespace:
                         help="Set the color of the stars")
     parser.add_argument("--background", choices=BG_COLOR_NAMES, default="black",
                         help="Set background color.")
+    parser.add_argument("--brightness", choices=range(1, 6), type=int,
+                        default=3,
+                        help="Set the star brightness 1-Brightest, 3-Default, "
+                             "5-Dimmest")
     return parser.parse_args()
 
 
