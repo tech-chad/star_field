@@ -1,16 +1,18 @@
 # Star Field
 Star field simulation.
 
+![gif1](https://i.fluffy.cc/QkjDBLJxhQxff5Pnr1pRbcLFSTDCXZ4B.gif)
+
 ## Requires
 - python 3.7 +
-- pygame 2.1.0
+- pygame 2.1.0 +
 
-## To Run
+## One way to Run
 - Download wheel from: https://github.com/tech-chad/star_field/releases
 - Make and cd into new directory
 - Make a virtualvenv and activate
-- ```pip install star_field-0.1-py3-none-any.whl```
-- ```star_field```
+- pip install download wheel
+- run ```star_field```
 
 ## Commands
 - **<kbd>Q</kbd><kbd>q</kbd>** Quit
@@ -19,6 +21,7 @@ Star field simulation.
 - **<kbd>p</kbd>** Pause
 - **<kbd>r</kbd>** Toggle random moving center point
 - **<kbd>b</kbd>** Cycle through preset background colors
+- **<kbd>R</kbd>** Toggle reverse star field
 - **<kbd>d</kbd>** Reset to defaults
 - **<kbd>0123456789</kbd>** Set speed 0 fast to 9 slow
 - **<kbd>shift 0123456789</kbd>** Set number of stars 0 max to 9 minimum
