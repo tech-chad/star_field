@@ -28,7 +28,7 @@ MODES = ["solid_color", "cycle_color"]
 
 
 class StarColor:
-    def __init__(self):
+    def __init__(self) -> None:
         self.total_num_color_shades = 8
         self.color_dict = {"white": (255, 255, 255), "red": (255, 0, 0),
                            "green": (0, 255, 0), "blue": (0, 0, 255),
@@ -36,7 +36,7 @@ class StarColor:
                            "yellow": (255, 255, 0), "teal": (0, 255, 150),
                            "orange": (255, 128, 0), "purple": (190, 0, 255)}
         self.color = self.color_dict["white"]
-        self.shade_list = []
+        self.shade_list: List[Tuple[int, int, int]] = []
         self.make_shades()
 
     def get_color(self, color_number: int) -> Tuple[int, int, int]:
@@ -70,11 +70,11 @@ class StarColor:
 
     def make_shades(self) -> None:
         self.shade_list.clear()
-        i = 0
+        i = 0.0
         for _ in range(self.total_num_color_shades + 1):
-            color = (self.color[0]-(self.color[0] * i),
-                     self.color[1]-(self.color[1] * i),
-                     self.color[2]-(self.color[2] * i))
+            color = (int(self.color[0]-(self.color[0] * i)),
+                     int(self.color[1]-(self.color[1] * i)),
+                     int(self.color[2]-(self.color[2] * i)))
             self.shade_list.append(color)
             i += 0.075
 
@@ -84,10 +84,10 @@ class Star:
                  screen_width: int,
                  screen_height: int,
                  direction_list: List[Tuple[int, int]],
-                 star_color,
+                 star_color: StarColor,
                  center_adjust_x: int,
                  center_adjust_y: int,
-                 reverse: bool):
+                 reverse: bool) -> None:
         self.reverse = reverse
         self.star_color = star_color
         self.color_number = random.randint(1, star_color.num_color_shades())
@@ -99,8 +99,8 @@ class Star:
             loc_list = self.make_location_list()
             self.x, self.y = random.choice(loc_list)
             speed = random.randint(110, 190)
-            dx = (self.center_x - self.x) / speed
-            dy = (self.center_y - self.y) / speed
+            dx = (self.center_x - self.x) // speed
+            dy = (self.center_y - self.y) // speed
             self.direction_x = dx
             self.direction_y = dy
             self.size = random.choice([1, 1, 1, 1.5, 2, 2, 2.5])
@@ -147,8 +147,7 @@ class Star:
                 return True
             elif self.y <= -2 or self.y >= self.screen_height + 2:
                 return True
-            else:
-                return False
+        return False
 
     def make_location_list(self) -> List[Tuple[int, int]]:
         # for reverse mode
@@ -162,7 +161,7 @@ class Star:
         return loc_list
 
 
-def make_direction_list():
+def make_direction_list() -> List[Tuple[int, int]]:
     a = [i for i in range(-6, 7, 1)]
     path_list = []
     for x in a:
@@ -179,245 +178,211 @@ def make_direction_list():
     return path_list
 
 
-def get_key_pressed() -> str:
-    keys = pygame.key.get_pressed()
-    look_for = {pygame.K_q: "q", pygame.K_m: "m", pygame.K_0: "0",
-                pygame.K_1: "1", pygame.K_2: "2", pygame.K_3: "3",
-                pygame.K_4: "4", pygame.K_5: "5", pygame.K_6: "6",
-                pygame.K_7: "7", pygame.K_8: "8", pygame.K_9: "9",
-                pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
-                pygame.K_d: "d", pygame.K_DOWN: "down",
-                pygame.K_UP: "up", pygame.K_LEFT: "left",
-                pygame.K_RIGHT: "right", pygame.K_r: "r", pygame.K_b: "b",
-                pygame.K_a: "a"}
-    for k in look_for.keys():
-        if keys[k] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
-            return f"S {look_for[k]}"
-        elif keys[k]:
-            return look_for[k]
-    else:
-        return ""
+class StarField:
+    def __init__(self, win: pygame.Surface, args: argparse.Namespace) -> None:
+        pygame.key.set_repeat()  # could be moved to the main function
+        self.win = win
+        self.args = args
+        self.key_pressed = ""
+        self.num_of_stars = DEFAULT_STARS
+        self.speed_number = DEFAULT_SPEED
+        self.direction_list = make_direction_list()
+        self.star_colors = StarColor()
+        self.color_number = 0
+        self.color_mode = 0
+        self.cycle_count = 2000
+        self.cycle_color = 0
+        self.center_adjust_x = 0
+        self.center_adjust_y = 0
+        self.random_center_adjust = False
+        self.bg_color_number = BG_COLOR_NAMES.index(self.args.background)
+        self.width, self.height = pygame.display.get_window_size()
+        self.stars: List[Star] = []
+        self.run = True
+        self.pause = False
 
+    def main_loop(self) -> None:
+        number_list = [i for i in range(220, 39, -20)]  # for number of star
+        self.star_colors.set_brightness(self.args.brightness)
+        self.star_colors.set_color_name(self.args.color)
+        clock = pygame.time.Clock()
+        self.win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[self.bg_color_number]])
+        pygame.display.update()
+        self.load_stars(10, True)
+        while self.run:
+            self.events()
+            if self.random_center_adjust:
+                random_change = random.choice(["N", "U", "D", "L", "R"])
+                if random_change == "U":
+                    if self.center_adjust_y > -(self.height // 2 - 25):
+                        self.center_adjust_y -= 4
+                elif random_change == "D":
+                    if self.center_adjust_y < self.height // 2 - 25:
+                        self.center_adjust_y += 4
+                elif random_change == "L":
+                    if self.center_adjust_x > -(self.width // 2 - 25):
+                        self.center_adjust_x -= 4
+                elif random_change == "R":
+                    if self.center_adjust_x < self.width // 2 - 25:
+                        self.center_adjust_x += 4
+            if (MODES[self.color_mode] == "cycle_color" and
+                    self.cycle_count <= 0 and not self.pause):
 
-def star_field_loop(win: pygame.Surface, args: argparse.Namespace) -> None:
-    pygame.key.set_repeat()
-    width, height = pygame.display.get_window_size()
+                if self.cycle_color < len(COLOR_LIST) - 1:
+                    self.cycle_color += 1
+                else:
+                    self.cycle_color = 0
+                self.star_colors.set_color_name(COLOR_LIST[self.cycle_color])
+                self.cycle_count = 2000
+            elif MODES[self.color_mode] == "cycle_color" and not self.pause:
+                self.cycle_count -= 1
+            if not self.pause:
+                remove_list = []
+                self.win.fill(
+                    color=BG_COLOR_DICT[BG_COLOR_NAMES[self.bg_color_number]])
+                for star in self.stars:
+                    star.draw_star()
+                    if star.remove_star():
+                        remove_list.append(star)
+                pygame.display.flip()
+                for remove in remove_list:
+                    self.stars.pop(self.stars.index(remove))
+            if len(self.stars) <= number_list[self.num_of_stars]:
+                self.load_stars(2, False)
+            clock.tick(number_list[self.speed_number])
 
-    # if args.full_screen:
-    #     width, height = pygame.display.get_window_size()
-    # else:
-    #     width = DEFAULT_WIDTH
-    #     height = DEFAULT_HEIGHT
-    number_list = [i for i in range(220, 39, -20)]
-    num_of_stars = DEFAULT_STARS
-    speed_number = DEFAULT_SPEED
-    direction_list = make_direction_list()
-    star_colors = StarColor()
-    brightness = args.brightness
-    star_colors.set_brightness(brightness)
-    star_colors.set_color_name(args.color)
-    clock = pygame.time.Clock()
-    color_number = 0
-    color_mode = 0
-    cycle_count = 2000
-    cycle_color = 0
-    center_adjust_x = 0
-    center_adjust_y = 0
-    random_center_adjust = False
-    pause = False
-    bg_color_number = BG_COLOR_NAMES.index(args.background)
-    win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[bg_color_number]])
-    pygame.display.update()
-    stars = []
-    for _ in range(10):
-        s = Star(width,
-                 height,
-                 direction_list,
-                 star_colors,
-                 center_adjust_x,
-                 center_adjust_y,
-                 args.reverse,)
-        s.cycle(10)
-        stars.append(s)
+    def load_stars(self, number: int, cycle: bool) -> None:
+        for _ in range(number):
+            s = Star(self.width,
+                     self.height,
+                     self.direction_list,
+                     self.star_colors,
+                     self.center_adjust_x,
+                     self.center_adjust_y,
+                     self.args.reverse)
+            if cycle:
+                s.cycle(10)
+            self.stars.append(s)
 
-    run = True
-    while run:
+    def events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                self.run = False
             elif event.type == pygame.WINDOWRESIZED:
-                width, height = pygame.display.get_window_size()
-                center_adjust_y = center_adjust_x = 0
-                stars.clear()
-                for _ in range(10):
-                    s = Star(width,
-                             height,
-                             direction_list,
-                             star_colors,
-                             center_adjust_x,
-                             center_adjust_y,
-                             args.reverse,)
-                    s.cycle(10)
-                    stars.append(s)
+                self.width, self.height = pygame.display.get_window_size()
+                self.center_adjust_y = self.center_adjust_x = 0
+                self.stars.clear()
+                self.load_stars(10, True)
                 continue
             elif event.type == pygame.KEYDOWN:
-                if args.screensaver:
-                    run = False
-                key_pressed = get_key_pressed()
-                if key_pressed in ["q" or "S q"]:
-                    run = False
-                elif key_pressed == "p":
-                    pause = not pause
-                elif pause:
+                if self.args.screensaver:
+                    self.run = False
+                self.get_key_pressed()
+                if self.key_pressed in ["q" or "S q"]:
+                    self.run = False
+                elif self.key_pressed == "p":
+                    self.pause = not self.pause
+                elif self.pause:
                     continue
-                elif key_pressed in ["S 0", "S 1", "S 2", "S 3", "S 4", "S 5",
-                                     "S 6", "S 7", "S 8", "S 9"]:
-                    num_of_stars = int(key_pressed[-1])
-                elif key_pressed in ["0", "1", "2", "3", "4", "5", "6",
-                                     "7", "8", "9"]:
-                    speed_number = int(key_pressed)
-                elif key_pressed == "f":  # toggle back to window mode only
-                    if args.full_screen:
-                        args.full_screen = False
-                        pygame.display.toggle_fullscreen()
-                        pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT),
-                                                pygame.RESIZABLE)
-                        width, height = pygame.display.get_window_size()
-                        center_adjust_y = center_adjust_x = 0
-                        stars.clear()
-                        for _ in range(10):
-                            s = Star(width,
-                                     height,
-                                     direction_list,
-                                     star_colors,
-                                     center_adjust_x,
-                                     center_adjust_y,
-                                     args.reverse,)
-                            s.cycle(10)
-                            stars.append(s)
-                elif key_pressed == "d":
-                    # reset to default
-                    num_of_stars = DEFAULT_STARS
-                    speed_number = DEFAULT_SPEED
-                    color_number = 0
-                    star_colors.set_color_name(COLOR_LIST[color_number])
-                    color_mode = 0
-                    cycle_count = 2000
-                    cycle_color = 0
-                    center_adjust_y = center_adjust_x = 0
-                    random_center_adjust = False
-                    bg_color_number = 0
-                    brightness = 3
-                    star_colors.set_brightness(brightness)
-                    if args.reverse:
-                        args.reverse = False
-                        stars.clear()
-                        for _ in range(10):
-                            s = Star(width,
-                                     height,
-                                     direction_list,
-                                     star_colors,
-                                     center_adjust_x,
-                                     center_adjust_y,
-                                     args.reverse,)
-                            s.cycle(10)
-                            stars.append(s)
-                elif key_pressed == "S r":
-                    args.reverse = not args.reverse
-                    stars.clear()
-                    for _ in range(10):
-                        s = Star(width,
-                                 height,
-                                 direction_list,
-                                 star_colors,
-                                 center_adjust_x,
-                                 center_adjust_y,
-                                 args.reverse, )
-                        s.cycle(10)
-                        stars.append(s)
-                elif key_pressed == "n" and MODES[color_mode] == "solid_color":
-                    if color_number < len(COLOR_LIST) - 1:
-                        color_number += 1
-                    else:
-                        color_number = 0
-                    star_colors.set_color_name(COLOR_LIST[color_number])
-                elif key_pressed == "m":
-                    if color_mode < len(MODES) - 1:
-                        color_mode += 1
-                    else:
-                        color_mode = 0
-                    if MODES[color_mode] == "cycle_color":
-                        star_colors.set_color_name(COLOR_LIST[cycle_color])
-                    elif MODES[color_mode] == "solid_color":
-                        star_colors.set_color_name(COLOR_LIST[color_number])
-                elif key_pressed == "r":
-                    if random_center_adjust:
-                        random_center_adjust = False
-                        center_adjust_y = center_adjust_x = 0
-                    else:
-                        random_center_adjust = True
-                elif key_pressed == "b":
-                    if bg_color_number == len(BG_COLOR_NAMES) - 1:
-                        bg_color_number = 0
-                    else:
-                        bg_color_number += 1
-                elif key_pressed == "up" and not random_center_adjust:
-                    if center_adjust_y > -(height // 2 - 25):
-                        center_adjust_y -= 20
-                elif key_pressed == "down" and not random_center_adjust:
-                    if center_adjust_y < height // 2 - 25:
-                        center_adjust_y += 20
-                elif key_pressed == "left" and not random_center_adjust:
-                    if center_adjust_x > -(width // 2 - 25):
-                        center_adjust_x -= 20
-                elif key_pressed == "right" and not random_center_adjust:
-                    if center_adjust_x < width // 2 - 25:
-                        center_adjust_x += 20
-        if random_center_adjust:
-            random_change = random.choice(["N", "U", "D", "L", "R"])
-            if random_change == "U":
-                if center_adjust_y > -(height // 2 - 25):
-                    center_adjust_y -= 4
-            elif random_change == "D":
-                if center_adjust_y < height // 2 - 25:
-                    center_adjust_y += 4
-            elif random_change == "L":
-                if center_adjust_x > -(width // 2 - 25):
-                    center_adjust_x -= 4
-            elif random_change == "R":
-                if center_adjust_x < width // 2 - 25:
-                    center_adjust_x += 4
-        if MODES[color_mode] == "cycle_color" and cycle_count <= 0 and not pause:
-            if cycle_color < len(COLOR_LIST) - 1:
-                cycle_color += 1
-            else:
-                cycle_color = 0
-            star_colors.set_color_name(COLOR_LIST[cycle_color])
-            cycle_count = 2000
-        elif MODES[color_mode] == "cycle_color" and not pause:
-            cycle_count -= 1
-        if not pause:
-            remove_list = []
-            win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[bg_color_number]])
-            for star in stars:
-                star.draw_star()
-                if star.remove_star():
-                    remove_list.append(star)
-            pygame.display.flip()
-            for remove in remove_list:
-                stars.pop(stars.index(remove))
-        if len(stars) <= number_list[num_of_stars]:
-            for _ in range(2):
-                s = Star(width,
-                         height,
-                         direction_list,
-                         star_colors,
-                         center_adjust_x,
-                         center_adjust_y,
-                         args.reverse,)
-                stars.append(s)
+                self.process_key_press()
 
-        clock.tick(number_list[speed_number])
+    def process_key_press(self) -> None:
+        if self.key_pressed in ["S 0", "S 1", "S 2", "S 3", "S 4", "S 5",
+                                "S 6", "S 7", "S 8", "S 9"]:
+            self.num_of_stars = int(self.key_pressed[-1])
+        elif self.key_pressed in ["0", "1", "2", "3", "4", "5", "6",
+                                  "7", "8", "9"]:
+            self.speed_number = int(self.key_pressed)
+        elif self.key_pressed == "f":  # toggle back to window mode only
+            if self.args.full_screen:
+                self.args.full_screen = False
+                pygame.display.toggle_fullscreen()
+                pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT),
+                                        pygame.RESIZABLE)
+                self.width, self.height = pygame.display.get_window_size()
+                self.center_adjust_y = self.center_adjust_x = 0
+                self.stars.clear()
+                self.load_stars(10, True)
+        elif self.key_pressed == "d":
+            # reset to default
+            self.num_of_stars = DEFAULT_STARS
+            self.speed_number = DEFAULT_SPEED
+            self.color_number = 0
+            self.color_mode = 0
+            self.cycle_count = 2000
+            self.cycle_color = 0
+            self.center_adjust_y = self.center_adjust_x = 0
+            self.random_center_adjust = False
+            self.bg_color_number = 0
+            self.args.brightness = 3
+            self.star_colors.set_color_name(COLOR_LIST[self.color_number])
+            self.star_colors.set_brightness(self.args.brightness)
+            if self.args.reverse:
+                self.args.reverse = False
+                self.stars.clear()
+                self.load_stars(10, True)
+        elif self.key_pressed == "S r":
+            self.args.reverse = not self.args.reverse
+            self.stars.clear()
+            self.load_stars(10, True)
+        elif self.key_pressed == "n" and MODES[self.color_mode] == "solid_color":
+            if self.color_number < len(COLOR_LIST) - 1:
+                self.color_number += 1
+            else:
+                self.color_number = 0
+            self.star_colors.set_color_name(COLOR_LIST[self.color_number])
+        elif self.key_pressed == "m":
+            if self.color_mode < len(MODES) - 1:
+                self.color_mode += 1
+            else:
+                self.color_mode = 0
+            if MODES[self.color_mode] == "cycle_color":
+                self.star_colors.set_color_name(COLOR_LIST[self.cycle_color])
+            elif MODES[self.color_mode] == "solid_color":
+                self.star_colors.set_color_name(COLOR_LIST[self.color_number])
+        elif self.key_pressed == "r":
+            if self.random_center_adjust:
+                self.random_center_adjust = False
+                self.center_adjust_y = self.center_adjust_x = 0
+            else:
+                self.random_center_adjust = True
+        elif self.key_pressed == "b":
+            if self.bg_color_number == len(BG_COLOR_NAMES) - 1:
+                self.bg_color_number = 0
+            else:
+                self.bg_color_number += 1
+        elif self.key_pressed == "up" and not self.random_center_adjust:
+            if self.center_adjust_y > -(self.height // 2 - 25):
+                self.center_adjust_y -= 20
+        elif self.key_pressed == "down" and not self.random_center_adjust:
+            if self.center_adjust_y < self.height // 2 - 25:
+                self.center_adjust_y += 20
+        elif self.key_pressed == "left" and not self.random_center_adjust:
+            if self.center_adjust_x > -(self.width // 2 - 25):
+                self.center_adjust_x -= 20
+        elif self.key_pressed == "right" and not self.random_center_adjust:
+            if self.center_adjust_x < self.width // 2 - 25:
+                self.center_adjust_x += 20
+
+    def get_key_pressed(self) -> None:
+        self.key_pressed = ""
+        keys = pygame.key.get_pressed()
+        look_for = {pygame.K_q: "q", pygame.K_m: "m", pygame.K_0: "0",
+                    pygame.K_1: "1", pygame.K_2: "2", pygame.K_3: "3",
+                    pygame.K_4: "4", pygame.K_5: "5", pygame.K_6: "6",
+                    pygame.K_7: "7", pygame.K_8: "8", pygame.K_9: "9",
+                    pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
+                    pygame.K_d: "d", pygame.K_DOWN: "down",
+                    pygame.K_UP: "up", pygame.K_LEFT: "left",
+                    pygame.K_RIGHT: "right", pygame.K_r: "r", pygame.K_b: "b",
+                    pygame.K_a: "a"}
+        for k in look_for.keys():
+            if keys[k] and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+                self.key_pressed = f"S {look_for[k]}"
+                break
+            elif keys[k]:
+                self.key_pressed = look_for[k]
+                break
 
 
 def argument_parser() -> argparse.Namespace:
@@ -451,7 +416,8 @@ def main() -> None:
             pygame.RESIZABLE,
         )
     pygame.display.set_caption("Star Field")
-    star_field_loop(win, args)
+    star_field = StarField(win, args)
+    star_field.main_loop()
 
 
 if __name__ == "__main__":
