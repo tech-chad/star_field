@@ -40,6 +40,8 @@ class StarColor:
         self.make_shades()
 
     def get_color(self, color_number: int) -> Tuple[int, int, int]:
+        if color_number > len(self.shade_list) - 1:
+            color_number = len(self.shade_list) - 1
         return self.shade_list[color_number]
 
     def set_color_name(self, name: str) -> None:
