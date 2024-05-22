@@ -24,7 +24,15 @@ BG_COLOR_DICT = {
     "yellow": (128, 128, 0), "teal": (0, 140, 100), "orange": (128, 64, 0),
     "purple": (95, 0, 128), "black": (0, 0, 0), "gray": (90, 90, 90),
 }
-MODES = ["solid_color", "cycle_color"]
+MODES = ["solid_color", "cycle_color", "fade_color"]
+FADE_STEPS = [(-1, -1, 0), (0, 1, 0), (0, 0, -1), (1, 0, 0), (0, -1, 0),
+              (0, 0, 1), (0, 1, 0), (-1, 0, -1), (1, -1, 0), (0, 1, 1),
+              (-1, 0, -1), (0, -1, 0), (1, 1, 1)]
+
+FADE_GOAL = [(0, 0, 255), (0, 255, 255), (0, 255, 0), (255, 255, 0),
+             (255, 0, 0), (255, 0, 255), (255, 255, 255), (0, 255, 0),
+             (255, 0, 0), (255, 255, 255), (0, 255, 0), (0, 0, 0),
+             (255, 255, 255)]
 
 
 class StarColor:
@@ -49,7 +57,8 @@ class StarColor:
         self.make_shades()
 
     def set_color_rgb(self, red: int, green: int, blue: int) -> None:
-        ...
+        self.color = (red, green, blue)
+        self.make_shades()
 
     def set_default_color(self) -> None:
         ...
@@ -191,7 +200,13 @@ class StarField:
         self.direction_list = make_direction_list()
         self.star_colors = StarColor()
         self.color_number = 0
-        self.color_mode = 0
+        if self.args.fade:
+            self.color_mode = 2
+        else:
+            self.color_mode = 0
+        self.fade_color = (255, 255, 255)
+        self.fade_color_step = 0
+        self.fade_color_time = 5
         self.cycle_count = 2000
         self.cycle_color = 0
         self.center_adjust_x = 0
@@ -206,7 +221,10 @@ class StarField:
     def main_loop(self) -> None:
         number_list = [i for i in range(220, 39, -20)]  # for number of star
         self.star_colors.set_brightness(self.args.brightness)
-        self.star_colors.set_color_name(self.args.color)
+        if MODES[self.color_mode] == "fade_color":
+            self.star_colors.set_color_rgb(*self.fade_color)
+        else:
+            self.star_colors.set_color_name(self.args.color)
         clock = pygame.time.Clock()
         self.win.fill(color=BG_COLOR_DICT[BG_COLOR_NAMES[self.bg_color_number]])
         pygame.display.update()
@@ -238,6 +256,13 @@ class StarField:
                 self.cycle_count = 2000
             elif MODES[self.color_mode] == "cycle_color" and not self.pause:
                 self.cycle_count -= 1
+            elif MODES[self.color_mode] == "fade_color" and not self.pause:
+                if self.fade_color_time == 0:
+                    self.next_fade_color()
+                    self.star_colors.set_color_rgb(*self.fade_color)
+                    self.fade_color_time = 5
+                else:
+                    self.fade_color_time -= 1
             if not self.pause:
                 remove_list = []
                 self.win.fill(
@@ -386,6 +411,16 @@ class StarField:
                 self.key_pressed = look_for[k]
                 break
 
+    def next_fade_color(self) -> None:
+        r, g, b = self.fade_color
+        dr, dg, db = FADE_STEPS[self.fade_color_step]
+        self.fade_color = (r + dr, g + dg, b + db)
+        if self.fade_color == FADE_GOAL[self.fade_color_step]:
+            if self.fade_color_step >= len(FADE_STEPS) - 1:
+                self.fade_color_step = 0
+            else:
+                self.fade_color_step += 1
+
 
 def argument_parser() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -404,6 +439,8 @@ def argument_parser() -> argparse.Namespace:
                         default=3,
                         help="Set the star brightness 1-Brightest, 3-Default, "
                              "5-Dimmest")
+    parser.add_argument("--fade", action="store_true",
+                        help="Fade through the colors")
     return parser.parse_args()
 
 
