@@ -34,6 +34,11 @@ FADE_GOAL = [(0, 0, 255), (0, 255, 255), (0, 255, 0), (255, 255, 0),
              (255, 0, 0), (255, 255, 255), (0, 255, 0), (0, 0, 0),
              (255, 255, 255)]
 
+STAR_SIZE_NORMAL = [[0.5, 0.5, 0.5, 1.0, 1.0, 1.0],
+                    [1.0, 1.0, 1.0, 1.5, 2.0, 2.0],
+                    [1.0, 1.5, 2.0, 2.0, 2.5, 3.0],
+                    [1.5, 2.0, 2.5, 3.0, 3.5, 4.0]]
+
 
 class StarColor:
     def __init__(self) -> None:
@@ -98,7 +103,8 @@ class Star:
                  star_color: StarColor,
                  center_adjust_x: int,
                  center_adjust_y: int,
-                 reverse: bool) -> None:
+                 reverse: bool,
+                 star_size: int) -> None:
         self.reverse = reverse
         self.star_color = star_color
         self.color_number = random.randint(1, star_color.num_color_shades())
@@ -114,7 +120,7 @@ class Star:
             dy = (self.center_y - self.y) // speed
             self.direction_x = dx
             self.direction_y = dy
-            self.size = random.choice([1, 1, 1, 1.5, 2, 2, 2.5])
+            self.size = random.choice(STAR_SIZE_NORMAL[star_size])
         else:
             self.x = int(self.screen_width / 2) + center_adjust_x
             self.y = int(self.screen_height / 2) + center_adjust_y
@@ -122,7 +128,7 @@ class Star:
             self.direction_x = dx
             self.direction_y = dy
             self.size = random.randint(-3, -1)
-            self.max_size = random.choice([1, 1, 1, 1, 2, 2])
+            self.max_size = random.choice(STAR_SIZE_NORMAL[star_size])
 
     def draw_star(self) -> None:
         win = pygame.display.get_surface()
@@ -286,7 +292,8 @@ class StarField:
                      self.star_colors,
                      self.center_adjust_x,
                      self.center_adjust_y,
-                     self.args.reverse)
+                     self.args.reverse,
+                     self.args.size)
             if cycle:
                 s.cycle(10)
             self.stars.append(s)
@@ -344,6 +351,7 @@ class StarField:
             self.args.brightness = 3
             self.star_colors.set_color_name(COLOR_LIST[self.color_number])
             self.star_colors.set_brightness(self.args.brightness)
+            self.args.size = 1
             if self.args.reverse:
                 self.args.reverse = False
                 self.stars.clear()
@@ -373,6 +381,11 @@ class StarField:
                 self.center_adjust_y = self.center_adjust_x = 0
             else:
                 self.random_center_adjust = True
+        elif self.key_pressed == "s":
+            if self.args.size == len(STAR_SIZE_NORMAL) - 1:
+                self.args.size = 0
+            else:
+                self.args.size += 1
         elif self.key_pressed == "b":
             if self.bg_color_number == len(BG_COLOR_NAMES) - 1:
                 self.bg_color_number = 0
@@ -399,6 +412,7 @@ class StarField:
                     pygame.K_4: "4", pygame.K_5: "5", pygame.K_6: "6",
                     pygame.K_7: "7", pygame.K_8: "8", pygame.K_9: "9",
                     pygame.K_p: "p", pygame.K_n: "n", pygame.K_f: "f",
+                    pygame.K_s: "s",
                     pygame.K_d: "d", pygame.K_DOWN: "down",
                     pygame.K_UP: "up", pygame.K_LEFT: "left",
                     pygame.K_RIGHT: "right", pygame.K_r: "r", pygame.K_b: "b",
@@ -441,6 +455,8 @@ def argument_parser() -> argparse.Namespace:
                              "5-Dimmest")
     parser.add_argument("--fade", action="store_true",
                         help="Fade through the colors")
+    parser.add_argument("--size", choices=range(0, 4), default=1, type=int,
+                        help="change the size of the stars")
     return parser.parse_args()
 
 
