@@ -97,9 +97,9 @@ class StarColor:
 
 class Star:
     def __init__(self,
-                 screen_width: int,
-                 screen_height: int,
-                 direction_list: List[Tuple[int, int]],
+                 screen_width: float,
+                 screen_height: float,
+                 direction_list: List[Tuple[float, float]],
                  star_color: StarColor,
                  center_adjust_x: int,
                  center_adjust_y: int,
@@ -111,19 +111,19 @@ class Star:
         self.screen_width = screen_width
         self.screen_height = screen_height
         if self.reverse:
-            self.center_x = int(self.screen_width / 2) + center_adjust_x
-            self.center_y = int(self.screen_height / 2) + center_adjust_y
+            self.center_x = self.screen_width / 2 + center_adjust_x
+            self.center_y = self.screen_height / 2 + center_adjust_y
             loc_list = self.make_location_list()
             self.x, self.y = random.choice(loc_list)
             speed = random.randint(110, 190)
-            dx = (self.center_x - self.x) // speed
-            dy = (self.center_y - self.y) // speed
+            dx = (self.center_x - self.x) / speed
+            dy = (self.center_y - self.y) / speed
             self.direction_x = dx
             self.direction_y = dy
             self.size = random.choice(STAR_SIZE_NORMAL[star_size])
         else:
-            self.x = int(self.screen_width / 2) + center_adjust_x
-            self.y = int(self.screen_height / 2) + center_adjust_y
+            self.x = (self.screen_width / 2) + center_adjust_x
+            self.y = (self.screen_height / 2) + center_adjust_y
             dx, dy = random.choice(direction_list)
             self.direction_x = dx
             self.direction_y = dy
@@ -166,19 +166,19 @@ class Star:
                 return True
         return False
 
-    def make_location_list(self) -> List[Tuple[int, int]]:
+    def make_location_list(self) -> List[Tuple[float, float]]:
         # for reverse mode
         loc_list = []
-        for x in range(-5, self.screen_width + 5):
-            loc_list.append((x, -5))
-            loc_list.append((x, self.screen_height + 5))
-        for y in range(-5, self.screen_height + 5):
-            loc_list.append((self.screen_width + 5, y))
-            loc_list.append((-5, y))
+        for x in range(-5, int(self.screen_width) + 5):
+            loc_list.append((float(x), -5.0))
+            loc_list.append((float(x), self.screen_height + 5.0))
+        for y in range(-5, int(self.screen_height) + 5):
+            loc_list.append((self.screen_width + 5.0, float(y)))
+            loc_list.append((-5.0, float(y)))
         return loc_list
 
 
-def make_direction_list() -> List[Tuple[int, int]]:
+def make_direction_list() -> List[Tuple[float, float]]:
     a = [i for i in range(-6, 7, 1)]
     path_list = []
     for x in a:
@@ -186,12 +186,12 @@ def make_direction_list() -> List[Tuple[int, int]]:
             if x == 0 and y == 0:
                 continue
             elif x == y or abs(x) == abs(y):
-                path_list.append((x, y))
+                path_list.append((float(x), float(y)))
             elif x == 0 or y == 0:
-                path_list.append((x, y))
+                path_list.append((float(x), float(y)))
             else:
                 for _ in range(6):
-                    path_list.append((x, y))
+                    path_list.append((float(x), float(y)))
     return path_list
 
 
